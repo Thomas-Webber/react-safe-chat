@@ -1,0 +1,28 @@
+
+/* General Fixes */
+body, html, ul {
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root{
+  height: 100%;
+}
+
+body{
+  font-family: 'Orbitron', Helvetica, sans-serif;
+}
+
+/* Theme color */
+.primary{color: white}
+.primary-bg{ background-color: #1D2025; }
+.secondary-bg{  background-color: #3F2640; }
+
+/* HELPER CLASSES */
+.fullheight{ height: 100%; }
+.d-flex{ display: flex; }
+.c-flex{ display: flex; flex-direction: column; }
+.flex-1{ flex: 1; }
+.justify-content-center{ justify-content: center; }
+.align-item-center{ align-items: center; }
+

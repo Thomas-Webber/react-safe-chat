@@ -1,0 +1,16 @@
+.room-leftPanel{
+    width: 200px;
+}
+
+.room-mainPanel{
+    flex: 1;
+}
+
+.room-region-content{
+    flex: 1;
+}
+
+.room-region-input{
+    border-top: 1px solid white;
+    height: 60px;
+}
