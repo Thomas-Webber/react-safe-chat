@@ -26,5 +26,11 @@
     "webpack",
     "jest",
     "src/setupTests.ts"
+  ],
+  "typeRoots": [
+    "./node_modules/@types"
+  ],
+  "types": [
+    "websocket"
   ]
 }

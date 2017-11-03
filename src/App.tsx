@@ -7,7 +7,7 @@ import {
 } from 'react-router-dom';
 
 import AboutComponent from './components/about/AboutComponent';
-import HomeComponent from './components/room/RoomComponent';
+import HomeComponent from './components/home/HomeComponent';
 import RoomComponent from "./components/room/RoomComponent";
 
 // const logo = require('./logo.svg');
