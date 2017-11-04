@@ -1,5 +1,6 @@
 .room-leftPanel{
     width: 200px;
+    overflow-y: auto;
 }
 
 .room-mainPanel{
@@ -8,9 +9,21 @@
 
 .room-region-content{
     flex: 1;
+    overflow-y: auto;
 }
 
 .room-region-form{
     border-top: 1px solid white;
-    height: 60px;
+    height: 26px;
+    text-align: center;
+}
+.room-region-form-message{
+    width: 80%;
+}
+
+.room-message-item-from{
+  width: 70px;
+  display: inline-block;
+  text-overflow: ellipsis;
+  overflow-x: hidden;
 }

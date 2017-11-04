@@ -17,13 +17,11 @@ class App extends React.Component {
     return (
         <Router>
             <div className="fullheight c-flex">
-                <ul>
-                    <li><Link to="/">Home</Link></li>
-                    <li><Link to="/about">About</Link></li>
-                    <li><Link to="/room/qwert">Room</Link></li>
+                <ul className="header d-flex justify-content-around primary primary-bg">
+                    <li><Link className="primary" to="/">Home</Link></li>
+                    <li><Link className="primary" to="/about">About</Link></li>
+                    <li><Link className="primary" to="/room/qwert">Room</Link></li>
                 </ul>
-
-                <hr/>
 
                 <Route exact path="/" component={HomeComponent}/>
                 <Route path="/about" component={AboutComponent}/>

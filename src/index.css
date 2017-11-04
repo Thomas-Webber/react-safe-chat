@@ -12,6 +12,9 @@ html, body, #root{
 body{
   font-family: 'Orbitron', Helvetica, sans-serif;
 }
+input, button{
+    font-family: inherit;
+}
 
 /* Theme color */
 .primary{color: white}
@@ -24,5 +27,6 @@ body{
 .c-flex{ display: flex; flex-direction: column; }
 .flex-1{ flex: 1; }
 .justify-content-center{ justify-content: center; }
+.justify-content-around{ justify-content: space-around; }
+.justify-content-between{ justify-content: space-between; }
 .align-item-center{ align-items: center; }
-
