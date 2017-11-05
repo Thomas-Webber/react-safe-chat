@@ -1,10 +1,12 @@
 .room-leftPanel{
     width: 200px;
     overflow-y: auto;
+    word-wrap: break-word;
 }
 
 .room-mainPanel{
     flex: 1;
+    overflow: hidden;
 }
 
 .room-region-content{
@@ -21,9 +23,21 @@
     width: 80%;
 }
 
+.room-message-item{
+    align-items: baseline;
+}
+
+
+
 .room-message-item-from{
   width: 70px;
   display: inline-block;
   text-overflow: ellipsis;
   overflow-x: hidden;
+}
+
+.room-message-item-content{
+    font-size: 14px;
+    width: calc(100% - 70px);
+    word-wrap: break-word;
 }

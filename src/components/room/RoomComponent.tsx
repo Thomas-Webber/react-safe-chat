@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 
 import './Room.css';
 import Storage from '../../helpers/Storage';
@@ -13,40 +14,44 @@ interface UserInterface {
     name: string;
 }
 
-interface _State{
-    members: UserInterface[],
-    messages: MessageInterface[],
-    input:string,
-    nickName:string
+interface _State {
+    members: UserInterface[];
+    messages: MessageInterface[];
+    input: string;
+    nickName: string;
 }
 
-const BACKEND_USER_NAME = "go-safe-chat-backend";
-const ACTION_USER_LIST  = "userList";
-const ACTION_NEW_USER   = "newUser";
-const ACTION_MESSAGE    = "message";
+const BACKEND_USER_NAME = 'go-safe-chat-backend';
+const ACTION_USER_LIST  = 'userList';
+const ACTION_NEW_USER   = 'newUser';
+const ACTION_USER_EXIT  = 'userLeft';
+const ACTION_MESSAGE    = 'message';
+
 
 export default class RoomComponent extends React.Component<any, _State> {
 
     private socket: WebSocket;
+    private regionContentElement: any;
+    private regionContentDOM: any;
 
-    constructor(props : any) {
+    constructor(props: any) {
         super(props);
 
         this.state = {
             members: [],
             messages: [],
-            input: "",
-            nickName: ""
+            input: '',
+            nickName: ''
         };
 
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleChange = this.handleChange.bind(this);
     }
 
-    public componentDidMount(){
+    public componentDidMount() {
         Storage.setLastRoom(this.props.match.params.id);
         let nickName = Storage.getLastNickName();
-        if (!nickName){
+        if (!nickName) {
             this.props.history.push('/home'); // FIXME: bug when redirected, home component is blank
             return;
         }
@@ -54,53 +59,60 @@ export default class RoomComponent extends React.Component<any, _State> {
         let websocketUrl: string = String(process.env.REACT_APP_WS_URL) || '';
         this.socket = new WebSocket(websocketUrl, this.props.match.params.id);
         this.socket.onmessage = this.hanldeWebsocketMessage.bind(this);
+        this.regionContentDOM = ReactDOM.findDOMNode(this.regionContentElement);
     }
 
-    private hanldeWebsocketMessage(e: MessageEvent){
+    private hanldeWebsocketMessage(e: MessageEvent) {
         let messageFromWebsocket: MessageInterface = JSON.parse(e.data);
         console.log(e.data);
 
-        if (messageFromWebsocket.action === ACTION_USER_LIST){
-            let offsetName = 1;
-            let userList = JSON.parse(messageFromWebsocket.content);
-            while (userList.find((i: UserInterface) => i.name == this.state.nickName)){
-                this.setState({nickName: this.state.nickName + offsetName.toString()})
-                offsetName++;
-            }
-            userList.push({name: this.state.nickName})
-            this.setState({
-                members: userList
-            });
+        switch (messageFromWebsocket.action) {
+            case ACTION_USER_LIST:
+                let offsetName = 1;
+                let userList = JSON.parse(messageFromWebsocket.content);
+                while (userList.find((i: UserInterface) => i.name === this.state.nickName)) {
+                    this.setState({nickName: this.state.nickName + offsetName.toString()});
+                    offsetName++;
+                }
+                userList.push({name: this.state.nickName});
+                this.setState({
+                    members: userList
+                });
 
-            let newUserMessage: MessageInterface = {from: this.state.nickName, content: "", action: ACTION_NEW_USER};
-            this.socket.send(JSON.stringify(newUserMessage));
+                let newUserMessage: MessageInterface = {from: this.state.nickName, content: '', action: ACTION_NEW_USER};
+                this.socket.send(JSON.stringify(newUserMessage));
+                break;
+            case ACTION_NEW_USER:
+                this.setState({
+                    members: [...this.state.members, {name: messageFromWebsocket.content}]
+                });
+                break;
+            case ACTION_MESSAGE:
+                this.setState({
+                    messages: [...this.state.messages, messageFromWebsocket]
+                });
+
+                if (!this.state.members.find(i => i.name === messageFromWebsocket.from))
+                    this.setState({ members: [...this.state.members, {name: messageFromWebsocket.from}] });
+
+                this.scrollMaxDownContentRegion();
+                break;
+            case ACTION_USER_EXIT:
+                let members = this.state.members.filter((i: UserInterface) => i.name != messageFromWebsocket.content)
+                this.setState({
+                    members: members
+                });
+                break;
+            default:
+                return;
         }
-
-        else if (messageFromWebsocket.action === ACTION_NEW_USER){
-            // TODO notify new user action
-            console.log(messageFromWebsocket);
-        }
-
-        else if (messageFromWebsocket.action === ACTION_MESSAGE) {
-            this.setState({
-                messages: [...this.state.messages, messageFromWebsocket]
-            });
-
-            console.log(this.state.members);
-            console.log(messageFromWebsocket.from);
-            if (!this.state.members.find(i => i.name === messageFromWebsocket.from))
-                console.log("!this.state.members.find(i => i.name === messageFromWebsocket.from))")
-
-            if (!this.state.members.find(i => i.name === messageFromWebsocket.from))
-                this.setState({ members: [...this.state.members, {name: messageFromWebsocket.from}] });
-        }
-
 
     }
 
-    private handleSubmit(e: any){
+    private handleSubmit(e: any) {
         e.preventDefault();
-
+        if (!this.state.input)
+            return;
         let newMessage: MessageInterface = {
             action: 'message',
             from: this.state.nickName,
@@ -111,40 +123,43 @@ export default class RoomComponent extends React.Component<any, _State> {
             input: ''
         });
         this.socket.send(JSON.stringify(newMessage));
-
-        //TODO scroll down
+        this.scrollMaxDownContentRegion();
     }
 
-    handleChange(e: any) {
+    private scrollMaxDownContentRegion() {
+        setInterval(() => this.regionContentDOM.scrollTop = this.regionContentDOM.scrollHeight, 100);
+    }
+
+    private handleChange(e: any) {
         this.setState({'input': e.target.value});
     }
 
     render() {
-
         return (
             <div className="d-flex flex-1">
-                <div className="room-leftPanel primary-bg primary">
+                <div className="room-leftPanel primary-bg primary scrollbar">
                     <h2>Room {this.props.match.params.id}</h2>
                     <hr/>
                     <ul>
-                        {this.state.members.map((i: any) => (i.name != BACKEND_USER_NAME) ? <li key={i.name}>{i.name}</li> : '' )}
+                        {this.state.members
+                            .map((i: any) => (i.name !== BACKEND_USER_NAME) ? <li key={i.name}>{i.name}</li> : '' )}
                     </ul>
 
                 </div>
                 <div className="room-mainPanel c-flex secondary-bg primary">
-                    <div className="room-region-content">
+                    <div className="room-region-content scrollbar" ref={(el) => { this.regionContentElement = el; }}>
                         <ul>
                             {this.state.messages.map((i: MessageInterface) =>
                               <li className="room-message-item d-flex">
                                 <span className="room-message-item-from">{i.from} </span>
                                 <span className="room-message-item-content">{i.content}</span>
-                                <span className="room-message-item-date"></span>
+                                <span className="room-message-item-date"/>
                               </li> )}
                         </ul>
                     </div>
 
                     <form className="room-region-form d-flex align-item-center justify-content-center" onSubmit={this.handleSubmit} >
-                        <input className="room-region-form-message" type="text" autoComplete="off" placeholder={"Message #" + this.props.match.params.id} onChange={this.handleChange} value={this.state.input}/>
+                        <input className="room-region-form-message" type="text" autoComplete="off" placeholder={'Message #' + this.props.match.params.id} onChange={this.handleChange} value={this.state.input}/>
                         <button id="submitMessage" type="submit">send</button>
                     </form>
                 </div>
