@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 
 import './Room.css';
 import Storage from '../../helpers/Storage';
+import Encryption from '../../helpers/Encryption';
 
 interface MessageInterface {
     action: string;
@@ -31,6 +32,7 @@ const ACTION_MESSAGE    = 'message';
 export default class RoomComponent extends React.Component<any, _State> {
 
     private socket: WebSocket;
+    private encryptionKey: string;
     private regionContentElement: any;
     private regionContentDOM: any;
 
@@ -51,6 +53,8 @@ export default class RoomComponent extends React.Component<any, _State> {
     public componentDidMount() {
         Storage.setLastRoom(this.props.match.params.id);
         let nickName = Storage.getLastNickName();
+        this.encryptionKey = Storage.getEncryptionKey() || '';
+        console.log(this.encryptionKey);
         if (!nickName) {
             this.props.history.push('/home');
             return;
@@ -70,8 +74,6 @@ export default class RoomComponent extends React.Component<any, _State> {
 
     private hanldeWebsocketMessage(e: MessageEvent) {
         let messageFromWebsocket: MessageInterface = JSON.parse(e.data);
-        console.log(e.data);
-
         switch (messageFromWebsocket.action) {
             case ACTION_USER_LIST:
                 let offsetName = 1;
@@ -94,6 +96,7 @@ export default class RoomComponent extends React.Component<any, _State> {
                 });
                 break;
             case ACTION_MESSAGE:
+                messageFromWebsocket.content = Encryption.decrypt(this.encryptionKey, messageFromWebsocket.content);
                 this.setState({
                     messages: [...this.state.messages, messageFromWebsocket]
                 });
@@ -119,21 +122,22 @@ export default class RoomComponent extends React.Component<any, _State> {
         e.preventDefault();
         if (!this.state.input)
             return;
+        this.setState({
+            messages: [...this.state.messages,
+                {action: 'message', from: this.state.nickName, content: this.state.input }],
+            input: ''
+        });
         let newMessage: MessageInterface = {
             action: 'message',
             from: this.state.nickName,
-            content: this.state.input
+            content: Encryption.encrypt(this.encryptionKey, this.state.input)
         };
-        this.setState({
-            messages: [...this.state.messages, newMessage],
-            input: ''
-        });
         this.socket.send(JSON.stringify(newMessage));
         this.scrollMaxDownContentRegion();
     }
 
     private scrollMaxDownContentRegion() {
-        setInterval(() => this.regionContentDOM.scrollTop = this.regionContentDOM.scrollHeight, 100);
+        setTimeout(() => this.regionContentDOM.scrollTop = this.regionContentDOM.scrollHeight, 0);
     }
 
     private handleChange(e: any) {
@@ -152,7 +156,7 @@ export default class RoomComponent extends React.Component<any, _State> {
                     </ul>
 
                 </div>
-                <div className="room-mainPanel c-flex secondary-bg primary">
+                <div className="room-mainPanel c-flex secondary-bg-rad primary">
                     <div className="primary primary-bg">
                         <h2 className="centered">Room #{this.props.match.params.id}
                             <span className="xs-toggle-show"> &middot; {this.state.members.length-1} online </span>
@@ -171,7 +175,7 @@ export default class RoomComponent extends React.Component<any, _State> {
                     </div>
 
                     <form className="room-region-form d-flex align-item-center justify-content-center" onSubmit={this.handleSubmit} >
-                        <input className="room-region-form-message" type="text" autoComplete="off" placeholder={'Message #' + this.props.match.params.id} onChange={this.handleChange} value={this.state.input}/>
+                        <input className="room-region-form-message" type="text" autoComplete="off" placeholder={'Message #' + this.props.match.params.id} onChange={this.handleChange} value={this.state.input} autoFocus/>
                         <button id="submitMessage" type="submit">send</button>
                     </form>
                 </div>

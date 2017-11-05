@@ -8,7 +8,7 @@ import {
 
 import AboutComponent from './components/about/AboutComponent';
 import HomeComponent from './components/home/HomeComponent';
-import RoomComponent from "./components/room/RoomComponent";
+import RoomComponent from './components/room/RoomComponent';
 
 // const logo = require('./logo.svg');
 
@@ -20,7 +20,6 @@ class App extends React.Component {
                 <ul className="header d-flex justify-content-around primary primary-bg">
                     <li><Link className="primary" to="/">Home</Link></li>
                     <li><Link className="primary" to="/about">About</Link></li>
-                    <li><Link className="primary" to="/room/qwert">Room</Link></li>
                 </ul>
 
                 <Route exact path="/" component={HomeComponent}/>
