@@ -1,4 +1,3 @@
-
 /* General Fixes */
 body, html, ul {
   margin: 0;
@@ -15,6 +14,7 @@ body{
 input, button{
     font-family: inherit;
 }
+h2{font-size: 1.2em;}
 
 /* Theme color */
 .primary{color: white}
@@ -45,3 +45,12 @@ input, button{
 .justify-content-around{ justify-content: space-around; }
 .justify-content-between{ justify-content: space-between; }
 .align-item-center{ align-items: center; }
+.centered{text-align: center}
+
+/* XS CLASSES */
+@media screen and (max-width: 550px) {
+    .xs-toggle-hide{display: none;}
+}
+@media screen and (min-width: 550px) {
+    .xs-toggle-show{display: none;}
+}

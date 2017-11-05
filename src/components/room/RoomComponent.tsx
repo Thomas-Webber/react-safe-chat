@@ -52,7 +52,7 @@ export default class RoomComponent extends React.Component<any, _State> {
         Storage.setLastRoom(this.props.match.params.id);
         let nickName = Storage.getLastNickName();
         if (!nickName) {
-            this.props.history.push('/home'); // FIXME: bug when redirected, home component is blank
+            this.props.history.push('/home');
             return;
         }
         this.setState({nickName: nickName});
@@ -60,6 +60,12 @@ export default class RoomComponent extends React.Component<any, _State> {
         this.socket = new WebSocket(websocketUrl, this.props.match.params.id);
         this.socket.onmessage = this.hanldeWebsocketMessage.bind(this);
         this.regionContentDOM = ReactDOM.findDOMNode(this.regionContentElement);
+    }
+
+    public componentWillUnmount(){
+        if (!this.socket)
+            return;
+        this.socket.close();
     }
 
     private hanldeWebsocketMessage(e: MessageEvent) {
@@ -137,8 +143,8 @@ export default class RoomComponent extends React.Component<any, _State> {
     render() {
         return (
             <div className="d-flex flex-1">
-                <div className="room-leftPanel primary-bg primary scrollbar">
-                    <h2>Room {this.props.match.params.id}</h2>
+                <div className="room-leftPanel primary-bg primary scrollbar xs-toggle-hide">
+                    <h2 className="centered">{this.state.members.length-1} online</h2>
                     <hr/>
                     <ul>
                         {this.state.members
@@ -147,6 +153,12 @@ export default class RoomComponent extends React.Component<any, _State> {
 
                 </div>
                 <div className="room-mainPanel c-flex secondary-bg primary">
+                    <div className="primary primary-bg">
+                        <h2 className="centered">Room #{this.props.match.params.id}
+                            <span className="xs-toggle-show"> &middot; {this.state.members.length-1} online </span>
+                        </h2>
+                        <hr style={{marginBottom: 0}}/>
+                    </div>
                     <div className="room-region-content scrollbar" ref={(el) => { this.regionContentElement = el; }}>
                         <ul>
                             {this.state.messages.map((i: MessageInterface) =>
